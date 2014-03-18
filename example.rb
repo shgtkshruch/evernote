@@ -97,20 +97,15 @@ def getURL(noteStore, noteGuid)
   uriFiltered
 end
 
-def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuidHash, filename)
-  our_note = Evernote::EDAM::Type::Note.new
-  our_note.guid = noteGuid
-  our_note.title = noteTitle
-  our_note.notebookGuid = notebookGuidHash["outputNote"]
-
+def updateNote(noteStore, updateNote)
   n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
   n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
-  n_body += "<en-note>#{noteBody}<br />"
+  n_body += "<en-note>#{updateNote.content}<br />"
 
-  unless filename.empty?
+  unless updateNote.resources.empty?
     hashFunc = Digest::MD5.new
-    image = open(filename){|io| io.read}
-    mimeType = MIME::Types.type_for(filename)
+    image = open(updateNote.resources){|io| io.read}
+    mimeType = MIME::Types.type_for(updateNote.resources)
     hexhash = hashFunc.hexdigest(image)
 
     data = Evernote::EDAM::Type::Data.new()
@@ -122,19 +117,19 @@ def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuidHash, filen
     resource.mime = "#{mimeType[0]}"
     resource.data = data
     resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new()
-    resource.attributes.fileName = filename
+    resource.attributes.fileName = updateNote.resources
 
     ### Add Resource objects to note body
-    our_note.resources = [resource]
+    updateNote.resources = [resource]
     n_body += '<br /><en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
   end
 
   n_body += "</en-note>"
 
-  our_note.content = n_body
+  updateNote.content = n_body
 
   begin
-    note = noteStore.updateNote(our_note)
+    note = noteStore.updateNote(updateNote)
 
   rescue Evernote::EDAM::Error::EDAMUserException => edus
     puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
@@ -159,21 +154,31 @@ noteGuids.each do |noteGuid|
   # Get url from note
   url = getURL(noteStore, noteGuid)
 
-  # Set note body
-  noteBody = "#{url}"
-
   # Get screenshot
   puts "Get screenshot form #{url}"
   `webkit2png --width=960 --fullsize --dir=$HOME/evernote --filename=#{FILENAMEPREFIX} --delay=3 #{url}`
 
   # Get page title
   page = Mechanize.new
-  pageTitle = page.get("#{url}").title
+
+  # Create note instance
+  updateNote = Evernote::EDAM::Type::Note.new()
+  updateNote.guid = noteGuid
+  updateNote.title = page.get("#{url}").title
+  updateNote.content = "#{url}"
+  updateNote.notebookGuid = notebookGuidHash["outputNote"]
+  updateNote.resources = FILENAME
+
+  # Set Note attributes
+  attributes = Evernote::EDAM::Type::NoteAttributes.new()
+  attributes.author = AUTHOR
+  attributes.sourceURL = "#{url}"
+  updateNote.attributes = attributes
 
   # Update note
   puts "Update note..."
-  puts "Title: #{pageTitle}"
-  updateNote(noteStore, noteGuid, pageTitle, noteBody, notebookGuidHash, FILENAME)
+  puts "Title: #{updateNote.title}"
+  updateNote(noteStore, updateNote)
 
   `rm #{FILENAME}`
   puts "Update note success!"
