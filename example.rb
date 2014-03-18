@@ -12,12 +12,13 @@ client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN)
 noteStore = client.note_store
 
 # Get some notes include search words
-def getNotesGuid(noteStore, words)
+def getNotesGuid(noteStore, notebookGuidHash, words)
   noteGuids = []
   count = 10
 
   filter = Evernote::EDAM::NoteStore::NoteFilter.new
   filter.words = words
+  filter.notebookGuid = notebookGuidHash["searchNote"]
 
   spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
 
@@ -32,12 +33,15 @@ end
 
 # Get notebook guid include search word
 def getNotebookGuid(noteStore, notebookName)
-  notebookGuid = ""
+  notebookGuid = {}
 
   notebookList = noteStore.listNotebooks
   notebookList.each do |notebook|
-    if notebook.name == notebookName
-      notebookGuid = notebook.guid
+    case notebook.name
+    when notebookName["searchNote"]
+      notebookGuid["searchNote"] = notebook.guid
+    when notebookName["outputNote"]
+      notebookGuid["outputNote"] = notebook.guid
     end
   end
 
@@ -75,11 +79,11 @@ def getURL(noteStore, noteGuid)
   uri
 end
 
-def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuid, filename)
+def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuidHash, filename)
   our_note = Evernote::EDAM::Type::Note.new
   our_note.guid = noteGuid
   our_note.title = noteTitle
-  our_note.notebookGuid = notebookGuid
+  our_note.notebookGuid = notebookGuidHash["outputNote"]
 
   n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
   n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
@@ -127,13 +131,15 @@ end
 
 # Variables
 searchWord = "web_design_evernote"
-notebookName = "Web design"
+notebookName = {"searchNote" => "inbox", "outputNote" => "Web design"}
 filenamePrefix = "ToEvernote"
 filename = "#{filenamePrefix}-full.png"
-notebookGuid = getNotebookGuid(noteStore, notebookName)
+
+# Get notebook guids that are search and output
+notebookGuidHash = getNotebookGuid(noteStore, notebookName)
 
 # Get note guid that include keyword
-noteGuids = getNotesGuid(noteStore, searchWord)
+noteGuids = getNotesGuid(noteStore, notebookGuidHash, searchWord)
 puts "Get #{noteGuids.length} note"
 
 # Get note title and content by guid
@@ -155,7 +161,7 @@ noteGuids.each do |noteGuid|
   # Update note
   puts "Update note..."
   puts "Title: #{pageTitle}"
-  updateNote(noteStore, noteGuid, pageTitle, noteBody, notebookGuid, filename)
+  updateNote(noteStore, noteGuid, pageTitle, noteBody, notebookGuidHash, filename)
 
   `rm #{filename}`
   puts "Update note success!"
