@@ -11,7 +11,7 @@ require "config.rb"
 client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN)
 noteStore = client.note_store
 
-# Get some notes by search words
+# Get some notes include search words
 def getNotesGuid(noteStore, words)
   noteGuids = []
   count = 10
@@ -28,6 +28,20 @@ def getNotesGuid(noteStore, words)
   end
 
   noteGuids
+end
+
+# Get notebook guid include search word
+def getNotebookGuid(noteStore, notebookName)
+  notebookGuid = ""
+
+  notebookList = noteStore.listNotebooks
+  notebookList.each do |notebook|
+    if notebook.name == notebookName
+      notebookGuid = notebook.guid
+    end
+  end
+
+  notebookGuid
 end
 
 # Get note by guid of note
@@ -61,10 +75,11 @@ def getURL(noteStore, noteGuid)
   uri
 end
 
-def updateNote(noteStore, noteGuid, noteTitle, noteBody, filename)
+def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuid, filename)
   our_note = Evernote::EDAM::Type::Note.new
   our_note.guid = noteGuid
   our_note.title = noteTitle
+  our_note.notebookGuid = notebookGuid
 
   n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
   n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
@@ -112,8 +127,10 @@ end
 
 # Variables
 searchWord = "web_design_evernote"
+notebookName = "Web design"
 filenamePrefix = "ToEvernote"
 filename = "#{filenamePrefix}-full.png"
+notebookGuid = getNotebookGuid(noteStore, notebookName)
 
 # Get note guid that include keyword
 noteGuids = getNotesGuid(noteStore, searchWord)
@@ -138,7 +155,7 @@ noteGuids.each do |noteGuid|
   # Update note
   puts "Update note..."
   puts "Title: #{pageTitle}"
-  updateNote(noteStore, noteGuid, pageTitle, noteBody, filename)
+  updateNote(noteStore, noteGuid, pageTitle, noteBody, notebookGuid, filename)
 
   `rm #{filename}`
   puts "Update note success!"
