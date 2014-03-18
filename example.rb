@@ -28,11 +28,11 @@ def getNotesGuid(noteStore, notebookGuidHash, words)
   noteGuids = []
   count = 10
 
-  filter = Evernote::EDAM::NoteStore::NoteFilter.new
+  filter = Evernote::EDAM::NoteStore::NoteFilter.new()
   filter.words = words
   filter.notebookGuid = notebookGuidHash["searchNote"]
 
-  spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
+  spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new()
 
   metadataList = noteStore.findNotesMetadata(filter, 0, count, spec)
   metadatas = metadataList.notes
@@ -103,7 +103,7 @@ def updateNote(noteStore, updateNote)
   n_body += "<en-note>#{updateNote.content}<br />"
 
   unless updateNote.resources.empty?
-    hashFunc = Digest::MD5.new
+    hashFunc = Digest::MD5.new()
     image = open(updateNote.resources){|io| io.read}
     mimeType = MIME::Types.type_for(updateNote.resources)
     hexhash = hashFunc.hexdigest(image)
@@ -119,7 +119,7 @@ def updateNote(noteStore, updateNote)
     resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new()
     resource.attributes.fileName = updateNote.resources
 
-    ### Add Resource objects to note body
+    # Add Resource objects to note body
     updateNote.resources = [resource]
     n_body += '<br /><en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
   end
@@ -156,10 +156,13 @@ noteGuids.each do |noteGuid|
 
   # Get screenshot
   puts "Get screenshot form #{url}"
-  `webkit2png --width=960 --fullsize --dir=$HOME/evernote --filename=#{FILENAMEPREFIX} --delay=3 #{url}`
+  `webkit2png --width=960 --fullsize --dir=$HOME/evernote --delay=3 #{url}`
 
   # Get page title
-  page = Mechanize.new
+  page = Mechanize.new()
+
+  # Set filename
+  filename = "#{url.gsub(/https?:\/\//, "").gsub(/[.\/]/, "")}-full.png"
 
   # Create note instance
   updateNote = Evernote::EDAM::Type::Note.new()
@@ -167,7 +170,7 @@ noteGuids.each do |noteGuid|
   updateNote.title = page.get("#{url}").title
   updateNote.content = "#{url}"
   updateNote.notebookGuid = notebookGuidHash["outputNote"]
-  updateNote.resources = FILENAME
+  updateNote.resources = filename
 
   # Set Note attributes
   attributes = Evernote::EDAM::Type::NoteAttributes.new()
@@ -180,6 +183,6 @@ noteGuids.each do |noteGuid|
   puts "Title: #{updateNote.title}"
   updateNote(noteStore, updateNote)
 
-  `rm #{FILENAME}`
+  `rm #{filename}`
   puts "Update note success!"
 end
