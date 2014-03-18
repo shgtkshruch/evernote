@@ -7,6 +7,12 @@ require "base64"
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
 require "config.rb"
 
+# DEVELOPER_TOKEN = "XXX"
+# SEARCHWORD = "XXX"
+# NOTEBOOKNAME = {"searchNote" => "XXX", "outputNote" => "XXX"}
+# FILENAMEPREFIX = "XXX"
+# FILENAME = "XXX"
+
 # Set up the NoteStore client 
 client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN)
 noteStore = client.note_store
@@ -129,17 +135,11 @@ def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuidHash, filen
   note
 end
 
-# Variables
-searchWord = "web_design_evernote"
-notebookName = {"searchNote" => "inbox", "outputNote" => "Web design"}
-filenamePrefix = "ToEvernote"
-filename = "#{filenamePrefix}-full.png"
-
 # Get notebook guids that are search and output
-notebookGuidHash = getNotebookGuid(noteStore, notebookName)
+notebookGuidHash = getNotebookGuid(noteStore, NOTEBOOKNAME)
 
 # Get note guid that include keyword
-noteGuids = getNotesGuid(noteStore, notebookGuidHash, searchWord)
+noteGuids = getNotesGuid(noteStore, notebookGuidHash, SEARCHWORD)
 puts "Get #{noteGuids.length} note"
 
 # Get note title and content by guid
@@ -152,7 +152,7 @@ noteGuids.each do |noteGuid|
 
   # Get screenshot
   puts "Get screenshot form #{url}"
-  `webkit2png --width=960 --fullsize --dir=$HOME/evernote --filename=#{filenamePrefix} --delay=3 #{url}`
+  `webkit2png --width=960 --fullsize --dir=$HOME/evernote --filename=#{FILENAMEPREFIX} --delay=3 #{url}`
 
   # Get page title
   page = Mechanize.new
@@ -161,8 +161,8 @@ noteGuids.each do |noteGuid|
   # Update note
   puts "Update note..."
   puts "Title: #{pageTitle}"
-  updateNote(noteStore, noteGuid, pageTitle, noteBody, notebookGuidHash, filename)
+  updateNote(noteStore, noteGuid, pageTitle, noteBody, notebookGuidHash, FILENAME)
 
-  `rm #{filename}`
+  `rm #{FILENAME}`
   puts "Update note success!"
 end
