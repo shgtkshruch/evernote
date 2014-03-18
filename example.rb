@@ -69,16 +69,22 @@ def getURL(noteStore, noteGuid)
 
   uriRegexp = URI.regexp(['http', 'https'])
   uriList = []
-  uri = []
+  uriFiltered = ""
 
   begin
     note = noteStore.getNote(noteGuid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData)
 
-    # Get url
+    # Get uriList
     note.content.scan(uriRegexp) do
       uriList.push(URI.parse($&))
     end
-    uri = uriList.uniq.slice(1)
+
+    # Filtering uriList
+    uriList.each do |uri|
+      unless uri.host.include?("feedly") || uri.host.include?("evernote") || uri.path =~ /20[0-9][0-9]/
+        uriFiltered = uri.to_s
+      end
+    end
 
   rescue Evernote::EDAM::Error::EDAMUserException => edus
     puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
@@ -88,7 +94,7 @@ def getURL(noteStore, noteGuid)
     puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
   end
 
-  uri
+  uriFiltered
 end
 
 def updateNote(noteStore, noteGuid, noteTitle, noteBody, notebookGuidHash, filename)
