@@ -1,5 +1,8 @@
 require "evernote_oauth"
 require "uri"
+require "mechanize"
+require "mime/types"
+require "base64"
 
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
 require "config.rb"
@@ -8,51 +11,45 @@ require "config.rb"
 client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN)
 noteStore = client.note_store
 
-# Variables
-noteGuids = []
-webTagsGuid = []
-url = ""
-
-# Get some notes by search words or guid of tag
-def getNotesGuid(noteStore, noteGuids, words, tagGuids)
-
-  count = 5
+# Get some notes by search words
+def getNotesGuid(noteStore, words)
+  noteGuids = []
+  count = 10
 
   filter = Evernote::EDAM::NoteStore::NoteFilter.new
   filter.words = words
-  filter.tagGuids = tagGuids
 
   spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
-  spec.includeTitle = true
+  # spec.includeTitle = true
 
   metadataList = noteStore.findNotesMetadata(filter, 0, count, spec)
   metadatas = metadataList.notes
   metadatas.each do |noteMeta|
-    noteGuids.push(noteMeta.guid)
+    noteGuids = noteGuids.push(noteMeta.guid)
   end
 
+  noteGuids
 end
 
 # Get note by guid of note
-def getURL(noteStore, noteGuids, url)
-
+def getURL(noteStore, noteGuid)
   withContent = true
   withResourcesData = false
   withResourcesRecognition = false
   withResourcesAlternateData = false
 
-  begin
-    noteGuids.each do |guid|
-      note = noteStore.getNote(guid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData)
+  uriRegexp = URI.regexp(['http', 'https'])
+  uriList = []
+  uri = []
 
-      # Get url
-      uriRegexp = URI.regexp(['http', 'https'])
-      uriList = []
-      note.content.scan(uriRegexp) do
-        uriList.push(URI.parse($&))
-      end
-      url = uriList.uniq.slice(1)
+  begin
+    note = noteStore.getNote(noteGuid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData)
+
+    # Get url
+    note.content.scan(uriRegexp) do
+      uriList.push(URI.parse($&))
     end
+    uri = uriList.uniq.slice(1)
 
   rescue Evernote::EDAM::Error::EDAMUserException => edus
     puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
@@ -62,37 +59,80 @@ def getURL(noteStore, noteGuids, url)
     puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
   end
 
+  uri
 end
 
-# Get tag guid by search tag name
-def getTag(noteStore, tagsGuid, tagName)
+def updateNote(noteStore, noteGuid, noteTitle, noteBody, filename)
+  our_note = Evernote::EDAM::Type::Note.new
+  our_note.guid = noteGuid
+  our_note.title = noteTitle
+
+  n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+  n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
+  n_body += "<en-note>#{noteBody}"
+
+  unless filename.empty?
+    hashFunc = Digest::MD5.new
+    image = open(filename){|io| io.read}
+    mimeType = MIME::Types.type_for(filename)
+    hexhash = hashFunc.hexdigest(image)
+
+    data = Evernote::EDAM::Type::Data.new()
+    data.size = image.size
+    data.bodyHash = hexhash
+    data.body = image
+
+    resource = Evernote::EDAM::Type::Resource.new()
+    resource.mime = "#{mimeType[0]}"
+    resource.data = data
+    resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new()
+    resource.attributes.fileName = filename
+
+    ### Add Resource objects to note body
+    our_note.resources = [resource]
+    n_body += '<en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
+  end
+
+  n_body += "</en-note>"
+
+  our_note.content = n_body
 
   begin
-    listTags = noteStore.listTags 
-    listTags.each do |tag|
-      if tag.name === tagName
-        tagsGuid.push(tag.guid)
-      end
-    end
+    note = noteStore.updateNote(our_note)
 
   rescue Evernote::EDAM::Error::EDAMUserException => edus
     puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
   rescue Evernote::EDAM::Error::EDAMSystemException => edsy
-    puts "EDAMSystemException: #{edsy}"
+    puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
   rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
-    puts "EDAMNotFoundException: #{edno}"
+    puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
   end
 
+  note
 end
 
-# Get tag guid that is named "web"
-getTag(noteStore, webTagsGuid, "web")
+# Variables
+searchWord = "web_design_evernote"
+noteBody = ""
+filenamePrefix = "ToEvernote"
+filename = "#{filenamePrefix}-full.png"
 
-# Get note guid that has "web" tag
-getNotesGuid(noteStore, noteGuids, "web_design_evernote", webTagsGuid)
+# Get note guid that include keyword
+noteGuids = getNotesGuid(noteStore, searchWord)
 
 # Get note title and content by guid
-getURL(noteStore, noteGuids, url)
+noteGuids.each do |noteGuid|
+  url = getURL(noteStore, noteGuid)
 
-# Get screenshot
-`webkit2png -F #{url}`
+  # Get screenshot
+  `webkit2png --width=960 --fullsize --dir=$HOME/evernote --filename=#{filenamePrefix} --delay=3 #{url}`
+
+  # Get page title
+  page = Mechanize.new
+  pageTitle = page.get("#{url}").title
+
+  # Update note
+  updateNote(noteStore, noteGuid, pageTitle, noteBody, filename)
+
+  `rm #{filename}`
+end
