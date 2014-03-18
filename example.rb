@@ -68,7 +68,7 @@ def updateNote(noteStore, noteGuid, noteTitle, noteBody, filename)
 
   n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
   n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
-  n_body += "<en-note>#{noteBody}"
+  n_body += "<en-note>#{noteBody}<br />"
 
   unless filename.empty?
     hashFunc = Digest::MD5.new
@@ -89,7 +89,7 @@ def updateNote(noteStore, noteGuid, noteTitle, noteBody, filename)
 
     ### Add Resource objects to note body
     our_note.resources = [resource]
-    n_body += '<en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
+    n_body += '<br /><en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
   end
 
   n_body += "</en-note>"
@@ -112,7 +112,6 @@ end
 
 # Variables
 searchWord = "web_design_evernote"
-noteBody = ""
 filenamePrefix = "ToEvernote"
 filename = "#{filenamePrefix}-full.png"
 
@@ -122,7 +121,11 @@ puts "Get #{noteGuids.length} note"
 
 # Get note title and content by guid
 noteGuids.each do |noteGuid|
+  # Get url from note
   url = getURL(noteStore, noteGuid)
+
+  # Set note body
+  noteBody = "#{url}"
 
   # Get screenshot
   puts "Get screenshot form #{url}"
