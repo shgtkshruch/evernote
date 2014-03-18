@@ -20,7 +20,6 @@ def getNotesGuid(noteStore, words)
   filter.words = words
 
   spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
-  # spec.includeTitle = true
 
   metadataList = noteStore.findNotesMetadata(filter, 0, count, spec)
   metadatas = metadataList.notes
@@ -119,12 +118,14 @@ filename = "#{filenamePrefix}-full.png"
 
 # Get note guid that include keyword
 noteGuids = getNotesGuid(noteStore, searchWord)
+puts "Get #{noteGuids.length} note"
 
 # Get note title and content by guid
 noteGuids.each do |noteGuid|
   url = getURL(noteStore, noteGuid)
 
   # Get screenshot
+  puts "Get screenshot form #{url}"
   `webkit2png --width=960 --fullsize --dir=$HOME/evernote --filename=#{filenamePrefix} --delay=3 #{url}`
 
   # Get page title
@@ -132,7 +133,10 @@ noteGuids.each do |noteGuid|
   pageTitle = page.get("#{url}").title
 
   # Update note
+  puts "Update note..."
+  puts "Title: #{pageTitle}"
   updateNote(noteStore, noteGuid, pageTitle, noteBody, filename)
 
   `rm #{filename}`
+  puts "Update note success!"
 end
