@@ -14,7 +14,13 @@ require "config.rb"
 # FILENAME = "XXX"
 
 # Set up the NoteStore client 
-client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN)
+case EVENV
+when "test"
+  client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN, sandbox: true, service_host: "sandbox.evernote.com")
+when "production"
+  client = EvernoteOAuth::Client.new(token: DEVELOPER_TOKEN, sandbox: false, service_host: "www.evernote.com")
+end
+
 noteStore = client.note_store
 
 # Get some notes include search words
