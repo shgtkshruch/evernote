@@ -121,7 +121,7 @@ class ScreenshotToEvernote
 
       # Filtering uriList
       uriList.each do |uri|
-        unless uri.host.include?("feedly") || uri.host.include?("evernote") || uri.path =~ /20[0-9][0-9]/
+        unless uri.host.include?("feedly") || uri.host.include?("evernote") || uri.host.include?("fullrss") || uri.path =~ /20[0-9][0-9]/
           @url = uri.to_s
         end
       end
