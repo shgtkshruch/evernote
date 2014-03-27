@@ -4,8 +4,11 @@ require "mechanize"
 require "mime/types"
 require "base64"
 
+EVENV = "production"
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
-require "config.rb"
+require "../config/token.rb"
+require "./config.rb"
+require "../module/base.rb"
 
 # DEVELOPER_TOKEN = "XXX"
 # SEARCHWORD = "XXX"
@@ -13,87 +16,55 @@ require "config.rb"
 # AUTHOR = "XXX"
 
 class ScreenshotToEvernote
+  include Base
+
   def initialize
     setupNoteStore
-    getNotebookGuid(NOTEBOOKNAME)
+    inputNotebook = getNotebook(INPUTNOTEBOOK)
+    outputNotebook = getNotebook(OUTPUTNOTEBOOK)
+    @notes = getNotes(inputNotebook, SEARCHWORD)
     hasNote?
-    @noteGuids.each do |noteGuid|
-      @noteGuid = noteGuid
+    @notes.each do |note|
+      @noteGuid = note.guid
       getURL(@noteGuid)
       getScreenshot
       getPageTitle
       getFilename
-      updateNote
+      updateNote(outputNotebook)
       endOperation
     end
     puts "Update all note successfully!"
   end
 
-  def setupNoteStore
-    case EVENV
-    when "test"
-      client = EvernoteOAuth::Client.new(
-        token: DEVELOPER_TOKEN, 
-        sandbox: true, 
-        service_host: "sandbox.evernote.com"
-      )
-    when "production"
-      client = EvernoteOAuth::Client.new(
-        token: DEVELOPER_TOKEN, 
-        sandbox: false, 
-        service_host: "www.evernote.com"
-      )
-    end
-    @noteStore = client.note_store
-  end
-
-  def getNotebookGuid(notebookName)
-    @notebookGuidHash = {}
-
-    notebookList = @noteStore.listNotebooks
-    notebookList.each do |notebook|
-      case notebook.name
-      when notebookName["searchNote"]
-        @notebookGuidHash["searchNote"] = notebook.guid
-      when notebookName["outputNote"]
-        @notebookGuidHash["outputNote"] = notebook.guid
-      end
-    end
-
-    @notebookGuidHash
-  end
-
   def hasNote?
-    # Get note guid that include keyword
-    @noteGuids = getNotesGuid(@notebookGuidHash, SEARCHWORD)
-    case @noteGuids.length
+    case @notes.length
     when 0
       puts "Not found note"
       exit 1
     when 1
-      puts "Get #{@noteGuids.length} note"
+      puts "Get #{@notes.length} note"
     else 
-      puts "Get #{@noteGuids.length} notes"
+      puts "Get #{@notes.length} notes"
     end
   end
 
-  def getNotesGuid(notebookGuidHash, words)
-    noteGuids = []
+  def getNotes(notebook, words)
+    notes = []
     count = 10
 
-    filter = Evernote::EDAM::NoteStore::NoteFilter.new()
+    filter = Evernote::EDAM::NoteStore::NoteFilter.new
     filter.words = words
-    filter.notebookGuid = notebookGuidHash["searchNote"]
+    filter.notebookGuid = notebook.guid
 
-    spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new()
+    spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
 
     metadataList = @noteStore.findNotesMetadata(filter, 0, count, spec)
     metadatas = metadataList.notes
     metadatas.each do |metadata|
-      noteGuids = noteGuids.push(metadata.guid)
+      notes.push(metadata)
     end
 
-    noteGuids
+    notes
   end
 
   def getURL(noteGuid)
@@ -139,7 +110,7 @@ class ScreenshotToEvernote
 
   def getScreenshot
     puts "Get screenshot form #{@url}"
-    `webkit2png --width=960 --fullsize --dir=$HOME/evernote --delay=3 #{@url}`
+    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=3 #{@url}`
   end
 
   def getPageTitle
@@ -151,18 +122,18 @@ class ScreenshotToEvernote
     @filename = "#{@url.gsub(/https?:\/\//, "").gsub(/[.\/\-]/, "")}-full.png"
   end
 
-  def updateNote
+  def updateNote(notebook)
     puts "Update note..."
 
     # Create note instance
-    note = Evernote::EDAM::Type::Note.new()
+    note = Evernote::EDAM::Type::Note.new
     note.guid = @noteGuid
     note.title = @pageTitle
     note.content = "#{@url}"
-    note.notebookGuid = @notebookGuidHash["outputNote"]
+    note.notebookGuid = notebook.guid
 
     # Set Note attributes
-    attributes = Evernote::EDAM::Type::NoteAttributes.new()
+    attributes = Evernote::EDAM::Type::NoteAttributes.new
     attributes.author = AUTHOR
     attributes.sourceURL = "#{@url}"
     note.attributes = attributes
@@ -177,15 +148,15 @@ class ScreenshotToEvernote
     image = open(@filename){|io| io.read}
     hexhash = hashFunc.hexdigest(image)
 
-    data = Evernote::EDAM::Type::Data.new()
+    data = Evernote::EDAM::Type::Data.new
     data.size = image.size
     data.bodyHash = hexhash
     data.body = image
 
-    resource = Evernote::EDAM::Type::Resource.new()
+    resource = Evernote::EDAM::Type::Resource.new
     resource.mime = "#{mimeType[0]}"
     resource.data = data
-    resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new()
+    resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new
     resource.attributes.fileName = @filename
     note.resources = [resource]
 
@@ -212,4 +183,4 @@ class ScreenshotToEvernote
   end
 end
 
-ScreenshotToEvernote.new()
+ScreenshotToEvernote.new
