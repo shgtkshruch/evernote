@@ -5,15 +5,15 @@ class Slide
 
   def initialize
     puts 'Slideshare URL'
-    url = gets
+    @url = gets.chomp
     agent = Mechanize.new
-    page = agent.get url
+    page = agent.get @url
     dirname = 'slide'
-    title = page.title
-    filename = "#{title}.pdf"
+    @title = page.title
+    @filename = "#{@title}.pdf"
     Dir.mkdir dirname
     getSlide(page, dirname)
-    convert(dirname, filename)
+    convert(dirname, @filename)
   end
 
   def getSlide(page, dirname)
@@ -30,5 +30,9 @@ class Slide
     `convert #{dirname}/*.jpg -compress jpeg "#{filename}"`
     FileUtils.rm Dir.glob '**/*.jpg'
     Dir.rmdir dirname
+  end
+
+  def remove(filename)
+    FileUtils.rm filename
   end
 end

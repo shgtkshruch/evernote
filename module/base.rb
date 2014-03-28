@@ -44,7 +44,11 @@ module Base
 
     n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
-    n_body += "<en-note>#{note.content}<br />"
+    n_body += "<en-note>#{note.content}"
+
+    unless content.empty?
+      n_body += "<br /><br />"
+    end
 
     # Set note resource
     unless filename.empty?
@@ -66,7 +70,7 @@ module Base
       note.resources = [resource]
 
       # Add Resource objects to note body
-      n_body += '<br /><en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
+      n_body += '<en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
     end
 
     n_body += "</en-note>"

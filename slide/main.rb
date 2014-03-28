@@ -24,3 +24,6 @@ note = slideNote.createNoteObject(title, content, noteGuid, notebookGuid, source
 
 # Create note in Evernote
 slideNote.createNote(note)
+
+# Remove PRF file
+slide.remove(filename)
