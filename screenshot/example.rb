@@ -1,14 +1,11 @@
-require "evernote_oauth"
-require "uri"
-require "mechanize"
-require "mime/types"
-require "base64"
+require 'uri'
+require 'mechanize'
 
-EVENV = "production"
+EVENV = 'test'
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
-require "../config/token.rb"
-require "./config.rb"
-require "../module/base.rb"
+require '../config/token.rb'
+require './config.rb'
+require '../module/base.rb'
 
 # DEVELOPER_TOKEN = "XXX"
 # SEARCHWORD = "XXX"
@@ -19,32 +16,34 @@ class ScreenshotToEvernote
   include Base
 
   def initialize
-    setupNoteStore
+    @noteStore = setupNoteStore
     inputNotebook = getNotebook(INPUTNOTEBOOK)
     outputNotebook = getNotebook(OUTPUTNOTEBOOK)
-    @notes = getNotes(inputNotebook, SEARCHWORD)
-    hasNote?
+    notes = getNotes(inputNotebook, SEARCHWORD)
+    hasNote?(notes)
     @notes.each do |note|
-      @noteGuid = note.guid
-      getURL(@noteGuid)
-      getScreenshot
-      getPageTitle
-      getFilename
-      updateNote(outputNotebook)
-      endOperation
+      url = getURL(note.guid)
+      title = getPageTitle(url)
+      filename = getFilename(url)
+      note = createNote(title, url, note.guid, inputNotebook.guid, url, filename)
+
+      getScreenshot(url)
+      puts "Update note..."
+      @noteStore.updateNote(note)
+      endOperation(filename, title)
     end
     puts "Update all note successfully!"
   end
 
   def hasNote?
-    case @notes.length
+    case notes.length
     when 0
       puts "Not found note"
       exit 1
     when 1
-      puts "Get #{@notes.length} note"
+      puts "Get #{notes.length} note"
     else 
-      puts "Get #{@notes.length} notes"
+      puts "Get #{notes.length} notes"
     end
   end
 
@@ -75,6 +74,7 @@ class ScreenshotToEvernote
 
     uriRegexp = URI.regexp(['http', 'https'])
     uriList = []
+    url = ''
 
     begin
       note = @noteStore.getNote(
@@ -93,7 +93,7 @@ class ScreenshotToEvernote
       # Filtering uriList
       uriList.each do |uri|
         unless uri.host.include?("feedly") || uri.host.include?("evernote") || uri.host.include?("fullrss") || uri.path =~ /20[0-9][0-9]/
-          @url = uri.to_s
+          url = uri.to_s
         end
       end
 
@@ -105,81 +105,28 @@ class ScreenshotToEvernote
       puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
     end
 
-    @url
+    url
   end
 
-  def getScreenshot
-    puts "Get screenshot form #{@url}"
-    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=3 #{@url}`
+  def getScreenshot(url)
+    puts "Get screenshot form #{url}"
+    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=3 #{url}`
   end
 
-  def getPageTitle
+  def getPageTitle(url)
     page = Mechanize.new()
-    @pageTitle = page.get("#{@url}").title
+    pageTitle = page.get("#{url}").title
+    pageTitle
   end
 
-  def getFilename
-    @filename = "#{@url.gsub(/https?:\/\//, "").gsub(/[.\/\-]/, "")}-full.png"
+  def getFilename(url)
+    filename = "#{url.gsub(/https?:\/\//, "").gsub(/[.\/\-]/, "")}-full.png"
+    filename
   end
 
-  def updateNote(notebook)
-    puts "Update note..."
-
-    # Create note instance
-    note = Evernote::EDAM::Type::Note.new
-    note.guid = @noteGuid
-    note.title = @pageTitle
-    note.content = "#{@url}"
-    note.notebookGuid = notebook.guid
-
-    # Set Note attributes
-    attributes = Evernote::EDAM::Type::NoteAttributes.new
-    attributes.author = AUTHOR
-    attributes.sourceURL = "#{@url}"
-    note.attributes = attributes
-
-    n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-    n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
-    n_body += "<en-note>#{note.content}<br />"
-
-    # Set note resource
-    mimeType = MIME::Types.type_for(@filename)
-    hashFunc = Digest::MD5.new()
-    image = open(@filename){|io| io.read}
-    hexhash = hashFunc.hexdigest(image)
-
-    data = Evernote::EDAM::Type::Data.new
-    data.size = image.size
-    data.bodyHash = hexhash
-    data.body = image
-
-    resource = Evernote::EDAM::Type::Resource.new
-    resource.mime = "#{mimeType[0]}"
-    resource.data = data
-    resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new
-    resource.attributes.fileName = @filename
-    note.resources = [resource]
-
-    # Add Resource objects to note body
-    n_body += '<br /><en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
-    n_body += "</en-note>"
-    note.content = n_body
-
-    begin
-      @noteStore.updateNote(note)
-
-    rescue Evernote::EDAM::Error::EDAMUserException => edus
-      puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
-    rescue Evernote::EDAM::Error::EDAMSystemException => edsy
-      puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
-    rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
-      puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
-    end
-  end
-
-  def endOperation
-    `rm #{@filename}`
-    puts "Update #{@pageTitle} note successfully!"
+  def endOperation(filename, title)
+    `rm #{filename}`
+    puts "Update #{page} note successfully!"
   end
 end
 
