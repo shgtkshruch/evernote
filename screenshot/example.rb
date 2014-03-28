@@ -1,7 +1,7 @@
 require 'uri'
 require 'mechanize'
 
-EVENV = 'test'
+EVENV = 'production'
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
 require '../config/token.rb'
 require './config.rb'
@@ -21,13 +21,15 @@ class ScreenshotToEvernote
     outputNotebook = getNotebook(OUTPUTNOTEBOOK)
     notes = getNotes(inputNotebook, SEARCHWORD)
     hasNote?(notes)
-    @notes.each do |note|
+    notes.each do |note|
       url = getURL(note.guid)
       title = getPageTitle(url)
-      filename = getFilename(url)
-      note = createNote(title, url, note.guid, inputNotebook.guid, url, filename)
 
       getScreenshot(url)
+
+      filename = getFilename(url)
+      note = createNoteObject(title, url, note.guid, outputNotebook.guid, url, filename)
+
       puts "Update note..."
       @noteStore.updateNote(note)
       endOperation(filename, title)
@@ -35,7 +37,7 @@ class ScreenshotToEvernote
     puts "Update all note successfully!"
   end
 
-  def hasNote?
+  def hasNote?(notes)
     case notes.length
     when 0
       puts "Not found note"
@@ -126,7 +128,7 @@ class ScreenshotToEvernote
 
   def endOperation(filename, title)
     `rm #{filename}`
-    puts "Update #{page} note successfully!"
+    puts "Update #{title} note successfully!"
   end
 end
 
