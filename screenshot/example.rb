@@ -112,7 +112,7 @@ class ScreenshotToEvernote
 
   def getScreenshot(url)
     puts "Get screenshot form #{url}"
-    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=3 #{url}`
+    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=3 "#{url}"`
   end
 
   def getPageTitle(url)
@@ -122,7 +122,7 @@ class ScreenshotToEvernote
   end
 
   def getFilename(url)
-    filename = "#{url.gsub(/https?:\/\//, "").gsub(/[.\/\-]/, "")}-full.png"
+    filename = "#{url.gsub(/https?:\/\//, "").gsub(/[.\/\-#]/, "")}-full.png"
     filename
   end
 
