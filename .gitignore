@@ -1,3 +1,6 @@
 .bundle
 bundle
 config.rb
+
+/* hatena */
+hatena/model/favorite.db
