@@ -5,7 +5,7 @@ EVENV = 'production'
 $LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
 require '../config/token.rb'
 require './config.rb'
-require '../module/base.rb'
+require '../module/SsEvernote.rb'
 
 # DEVELOPER_TOKEN = "XXX"
 # SEARCHWORD = "XXX"
@@ -13,7 +13,7 @@ require '../module/base.rb'
 # AUTHOR = "XXX"
 
 class ScreenshotToEvernote
-  include Base
+  include SsEvernote
 
   def initialize
     @noteStore = setupNoteStore

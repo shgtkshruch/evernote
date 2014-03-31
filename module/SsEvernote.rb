@@ -2,7 +2,7 @@ require 'evernote_oauth'
 require 'mime/types'
 require 'base64'
 
-module Base
+module SsEvernote
   def setupNoteStore
     case EVENV
     when 'test'
@@ -18,8 +18,8 @@ module Base
         service_host: 'www.evernote.com'
       )
     end
-    noteStore = client.note_store
-    noteStore
+    @noteStore = client.note_store
+    @noteStore
   end
 
   def getNotebook(notebookName)
@@ -28,13 +28,14 @@ module Base
     notebook
   end
 
-  def createNoteObject(title, content, noteGuid, notebookGuid, sourceURL, filename)
+  def createNoteObject(title, content, noteGuid, notebookGuid, sourceURL, filename, tagNames)
     # Create note instance
     note = Evernote::EDAM::Type::Note.new
     note.guid = noteGuid
     note.title = title
     note.content = content
     note.notebookGuid = notebookGuid
+    note.tagNames = tagNames
 
     # Set Note attributes
     attributes = Evernote::EDAM::Type::NoteAttributes.new

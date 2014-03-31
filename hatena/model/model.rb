@@ -2,7 +2,7 @@ require 'active_record'
 
 ActiveRecord::Base.establish_connection(
   "adapter" => "sqlite3",
-  "database" => "./favorite.db"
+  "database" => "./model/favorite.db"
 )
 
 class Favorite < ActiveRecord::Base
@@ -15,10 +15,10 @@ end
 
 class Mymodel
   def insertData(nodes)
-    isUpdate = ''
+    @isUpdate = ''
     nodes.each do |node|
       if Favorite.find_by_url(node[:link])
-        isUpdate = true
+        @isUpdate = true
         next
       else
         favorite = Favorite.new do |f|
@@ -37,9 +37,8 @@ class Mymodel
       end
     end
 
-    if isUpdate
-      puts "Database is updated"
-      exit 1
+    def isUpdate?
+      @isUpdate
     end
   end
 end
