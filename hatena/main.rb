@@ -1,7 +1,7 @@
-require_relative './config.rb'
-require_relative './hatena.rb'
-require_relative './model/model.rb'
-require_relative '../module/Slidenote.rb'
+require_relative './config'
+require_relative './hatena'
+require_relative './model/model'
+require_relative '../module/slide_note'
 
 url = 'http://b.hatena.ne.jp/sh19e/atomfeed'
 
@@ -26,5 +26,5 @@ tags = []
 favorite.tags.each do |tag|
   tags.push(tag.name)
 end
-Slidenote.new(favorite.url, tags)
+slideNote(favorite.url, tags)
 

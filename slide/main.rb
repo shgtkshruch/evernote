@@ -1,10 +1,10 @@
-require_relative './config.rb'
-require_relative '../module/Slidenote.rb'
+require_relative './config'
+require_relative '../module/slide_note'
+require 'evernote_oauth'
 
 # Get slide url
 puts 'Slide URL'
 url = gets.chomp
-tag = ['slide']
+tags = ['slide']
 
-Slidenote.new(url, tag)
-
+slideNote(url, tags)

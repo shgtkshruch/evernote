@@ -1,6 +1,7 @@
 require 'evernote_oauth'
 require 'mime/types'
 require 'base64'
+require_relative '../config/token'
 
 module SsEvernote
   def setupNoteStore
@@ -28,34 +29,34 @@ module SsEvernote
     notebook
   end
 
-  def createNoteObject(title, content, noteGuid, notebookGuid, sourceURL, filename, tagNames)
+  def createNoteObject(mynote)
     # Create note instance
     note = Evernote::EDAM::Type::Note.new
-    note.guid = noteGuid
-    note.title = title
-    note.content = content
-    note.notebookGuid = notebookGuid
-    note.tagNames = tagNames
+    note.guid = mynote.noteGuid
+    note.title = mynote.title
+    note.content = mynote.content
+    note.notebookGuid = mynote.notebookGuid
+    note.tagNames = mynote.tagNames
 
     # Set Note attributes
     attributes = Evernote::EDAM::Type::NoteAttributes.new
     attributes.author = AUTHOR
-    attributes.sourceURL = sourceURL
+    attributes.sourceURL = mynote.sourceURL
     note.attributes = attributes
 
     n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
     n_body += "<en-note>#{note.content}"
 
-    unless content.empty?
+    unless mynote.content.empty?
       n_body += "<br /><br />"
     end
 
     # Set note resource
-    unless filename.empty?
-      mimeType = MIME::Types.type_for(filename)
+    unless mynote.filename.empty?
+      mimeType = MIME::Types.type_for(mynote.filename)
       hashFunc = Digest::MD5.new
-      file = open(filename){|io| io.read}
+      file = open(mynote.filename){|io| io.read}
       hexhash = hashFunc.hexdigest(file)
 
       data = Evernote::EDAM::Type::Data.new
@@ -67,7 +68,7 @@ module SsEvernote
       resource.mime = "#{mimeType[0]}"
       resource.data = data
       resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new
-      resource.attributes.fileName = filename
+      resource.attributes.fileName = mynote.filename
       note.resources = [resource]
 
       # Add Resource objects to note body
