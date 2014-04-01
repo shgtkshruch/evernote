@@ -1,6 +1,7 @@
 .bundle
 bundle
 config.rb
+config/token.rb
 
 /* hatena */
 hatena/model/favorite.db
