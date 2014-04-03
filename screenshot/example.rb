@@ -22,7 +22,7 @@ class ScreenshotToEvernote
     hasNote?(notes)
     notes.each do |note|
       url = getURL(note.guid)
-      title = getPageTitle(url)
+      title = getPageTitle(url).gsub(/\n\s+/, '')
       getScreenshot(url)
 
       filename = getFilename(url)
@@ -38,7 +38,17 @@ class ScreenshotToEvernote
       note = createNoteObject(mynote)
 
       puts "Update note..."
-      @noteStore.updateNote(note)
+
+      begin 
+        @noteStore.updateNote(note)
+      rescue Evernote::EDAM::Error::EDAMUserException => edus
+        puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
+      rescue Evernote::EDAM::Error::EDAMSystemException => edsy
+        puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
+      rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
+        puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
+      end
+
       endOperation(filename, title)
     end
     puts "Update all note successfully!"
