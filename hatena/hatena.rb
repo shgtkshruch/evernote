@@ -6,7 +6,7 @@ class Hatena
     @doc =  Nokogiri::XML(open(url))
   end
 
-  def getXML(tagName)
+  def getXML(tagName = '')
     node = {}
     nodes = []
     @doc.search('entry author').each do |author|
@@ -25,7 +25,16 @@ class Hatena
         tagNodes.each do |tagNode|
           tag = tagNode.children.to_s 
           tags.push(tag)
-          if tag.include? "#{tagName}"
+          unless tagName.nil?
+            if tag.include? "#{tagName}"
+              isTag = true
+            else
+              isTag = false
+            end
+          else
+            isTag = true
+          end
+          if isTag
             links.each do |link|
               if link.attribute('rel').value == 'related'
                 href = link.attribute('href').to_s
