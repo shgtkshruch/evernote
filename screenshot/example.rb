@@ -1,11 +1,10 @@
 require 'uri'
 require 'mechanize'
 
-EVENV = 'production'
-$LOAD_PATH.push(File.expand_path(File.dirname(__FILE__)))
-require '../config/token.rb'
-require './config.rb'
-require '../module/SsEvernote.rb'
+require_relative './config'
+require_relative '../config/token'
+require_relative '../module/ss_evernote'
+require_relative '../module/mynote'
 
 # DEVELOPER_TOKEN = "XXX"
 # SEARCHWORD = "XXX"
@@ -24,11 +23,19 @@ class ScreenshotToEvernote
     notes.each do |note|
       url = getURL(note.guid)
       title = getPageTitle(url)
-
       getScreenshot(url)
 
       filename = getFilename(url)
-      note = createNoteObject(title, url, note.guid, outputNotebook.guid, url, filename)
+
+      mynote = Mynote.new
+      mynote.title = title
+      mynote.content = url
+      mynote.noteGuid = note.guid
+      mynote.notebookGuid = outputNotebook.guid
+      mynote.sourceURL = url
+      mynote.filename = filename
+
+      note = createNoteObject(mynote)
 
       puts "Update note..."
       @noteStore.updateNote(note)
@@ -112,7 +119,7 @@ class ScreenshotToEvernote
 
   def getScreenshot(url)
     puts "Get screenshot form #{url}"
-    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=3 "#{url}"`
+    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=4 "#{url}"`
   end
 
   def getPageTitle(url)
