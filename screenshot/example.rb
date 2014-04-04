@@ -38,16 +38,7 @@ class ScreenshotToEvernote
       note = createNoteObject(mynote)
 
       puts "Update note..."
-
-      begin 
-        @noteStore.updateNote(note)
-      rescue Evernote::EDAM::Error::EDAMUserException => edus
-        puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
-      rescue Evernote::EDAM::Error::EDAMSystemException => edsy
-        puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
-      rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
-        puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
-      end
+      ssUpdateNote(note)
 
       endOperation(filename, title)
     end
@@ -66,65 +57,26 @@ class ScreenshotToEvernote
     end
   end
 
-  def getNotes(notebook, words)
-    notes = []
-    count = 10
-
-    filter = Evernote::EDAM::NoteStore::NoteFilter.new
-    filter.words = words
-    filter.notebookGuid = notebook.guid
-
-    spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
-
-    metadataList = @noteStore.findNotesMetadata(filter, 0, count, spec)
-    metadatas = metadataList.notes
-    metadatas.each do |metadata|
-      notes.push(metadata)
-    end
-
-    notes
-  end
-
   def getURL(noteGuid)
-    withContent = true
-    withResourcesData = false
-    withResourcesRecognition = false
-    withResourcesAlternateData = false
-
     uriRegexp = URI.regexp(['http', 'https'])
     uriList = []
     url = ''
 
-    begin
-      note = @noteStore.getNote(
-        noteGuid, 
-        withContent, 
-        withResourcesData, 
-        withResourcesRecognition, 
-        withResourcesAlternateData
-      )
+    note = ssGetNote(noteGuid)
 
-      # Get uriList
-      note.content.scan(uriRegexp) do
-        uriList.push(URI.parse($&))
+    # Get uriList
+    note.content.scan(uriRegexp) do
+      uriList.push(URI.parse($&))
+    end
+
+    # Filtering uriList
+    uriList.each do |uri|
+      unless uri.host.include?("feedly") \
+        || uri.host.include?("evernote") \
+        || uri.host.include?("fullrss") \
+        || uri.path =~ /20[0-9][0-9]/
+        url = uri.to_s
       end
-
-      # Filtering uriList
-      uriList.each do |uri|
-        unless uri.host.include?("feedly") \
-          || uri.host.include?("evernote") \
-          || uri.host.include?("fullrss") \
-          || uri.path =~ /20[0-9][0-9]/
-          url = uri.to_s
-        end
-      end
-
-    rescue Evernote::EDAM::Error::EDAMUserException => edus
-      puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
-    rescue Evernote::EDAM::Error::EDAMSystemException => edsy
-      puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
-    rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
-      puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
     end
 
     url

@@ -29,6 +29,49 @@ module SsEvernote
     notebook
   end
 
+  def getNotes(notebook, words='')
+    notes = []
+    count = 100
+
+    filter = Evernote::EDAM::NoteStore::NoteFilter.new
+    filter.words = words
+    filter.notebookGuid = notebook.guid
+
+    spec = Evernote::EDAM::NoteStore::NotesMetadataResultSpec.new
+
+    metadataList = @noteStore.findNotesMetadata(filter, 0, count, spec)
+    metadatas = metadataList.notes
+    metadatas.each do |metadata|
+      notes.push(metadata)
+    end
+
+    notes
+  end
+
+  def ssGetNote(noteGuid)
+    withContent = true
+    withResourcesData = false
+    withResourcesRecognition = false
+    withResourcesAlternateData = false
+
+    begin
+      note = @noteStore.getNote(
+        noteGuid, 
+        withContent, 
+        withResourcesData, 
+        withResourcesRecognition, 
+        withResourcesAlternateData
+      )
+    rescue Evernote::EDAM::Error::EDAMUserException => edus
+      puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
+    rescue Evernote::EDAM::Error::EDAMSystemException => edsy
+      puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
+    rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
+      puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
+    end
+    note
+  end
+
   def createNoteObject(mynote)
     # Create note instance
     note = Evernote::EDAM::Type::Note.new
@@ -79,5 +122,15 @@ module SsEvernote
     note.content = n_body
 
     note
+  end
+
+  def ssUpdateNote(note)
+    @noteStore.updateNote(note)
+  rescue Evernote::EDAM::Error::EDAMUserException => edus
+    puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
+  rescue Evernote::EDAM::Error::EDAMSystemException => edsy
+    puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
+  rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
+    puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
   end
 end
