@@ -2,8 +2,7 @@ require 'active_record'
 
 ActiveRecord::Base.establish_connection(
   "adapter" => "sqlite3",
-  # "database" => "./model/favorite.db"
-  "database" => "./model/all.db"
+  "database" => "./model/favorite.db"
 )
 
 class Favorite < ActiveRecord::Base
@@ -16,7 +15,7 @@ end
 
 class Mymodel
   def insertData(nodes)
-    @isUpdate = ''
+    @isUpdate = false
     nodes.each do |node|
       if Favorite.find_by_url(node[:link])
         @isUpdate = true
@@ -25,6 +24,9 @@ class Mymodel
         favorite = Favorite.new do |f|
           f.title = node[:title]
           f.url = node[:link]
+          f.evernote = 0
+          f.pocket = 0
+          f.issued = node[:issued].gsub(/T/, ' ').gsub(/\+09:00/, '')
         end
         favorite.save
 
@@ -37,9 +39,9 @@ class Mymodel
         end
       end
     end
+  end
 
-    def isUpdate?
-      @isUpdate
-    end
+  def isUpdate?
+    @isUpdate
   end
 end

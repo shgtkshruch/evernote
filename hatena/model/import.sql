@@ -3,6 +3,9 @@ create table favorites(
   id integer  primary key,
   title text,
   url text,
+  evernote integer,
+  pocket integer,
+  issued text,
   created_at,
   updated_at
 );

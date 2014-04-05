@@ -1,4 +1,4 @@
-require_relative './bundle/ruby/2.1.0/gems/pocket-ruby-0.0.5/lib/pocket' 
+require_relative '../bundle/ruby/2.1.0/gems/pocket-ruby-0.0.5/lib/pocket' 
 require_relative './config'
 
 class SsPocket
@@ -9,8 +9,8 @@ class SsPocket
     @client = Pocket.client(:access_token => ACCESSTOKEN)
   end
 
-  def add(url)
-    @client.add :url => url
+  def add(url, tags = '')
+    @client.add :url => url, :tags => tags
   end
 
   def retrieve(count)
