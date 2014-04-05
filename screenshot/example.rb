@@ -23,7 +23,12 @@ class ScreenshotToEvernote
     notes.each do |note|
       url = getURL(note.guid)
       title = getPageTitle(url).gsub(/\n\s+/, '')
-      getScreenshot(url)
+      begin
+        getScreenshot(url)
+      rescue => e
+        puts "Error get screenshot: #{e}"
+        next
+      end
 
       filename = getFilename(url)
 
@@ -35,7 +40,12 @@ class ScreenshotToEvernote
       mynote.sourceURL = url
       mynote.filename = filename
 
-      note = createNoteObject(mynote)
+      begin
+        note = createNoteObject(mynote)
+      rescue => e
+        puts "Error createNoteObject: #{e}"
+        next
+      end
 
       puts "Update note..."
       ssUpdateNote(note)
