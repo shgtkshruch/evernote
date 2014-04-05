@@ -1,0 +1,22 @@
+# Select top item
+c:180, 80
+
+# Click share icon
+c:1865, 40
+w:1000
+
+# Click Evernote icon
+c:1735, 240
+w:3000
+
+# Chose pocket notebook
+c:1000, 220
+c:1000, 260
+w:500
+
+# Send to Evernote
+c:1090, 395
+w:1000
+
+# Trash item
+c:503, 37

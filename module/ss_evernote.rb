@@ -83,7 +83,7 @@ module SsEvernote
 
     # Set Note attributes
     attributes = Evernote::EDAM::Type::NoteAttributes.new
-    attributes.author = AUTHOR
+    attributes.author = AUTHOR if AUTHOR
     attributes.sourceURL = mynote.sourceURL
     note.attributes = attributes
 

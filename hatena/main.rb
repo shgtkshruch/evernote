@@ -1,6 +1,6 @@
 require_relative './config'
 require_relative './hatena'
-require_relative './model/model'
+require_relative '../model/model'
 require_relative '../module/slide_note'
 require_relative '../pocket/ss_pocket'
 
@@ -43,7 +43,6 @@ def addPocket
 end
 
 def addEvernote
-  # Upload to evernote
   favorites = Favorite.all
   favorites.each do |f|
     if f.evernote == 0
@@ -61,3 +60,4 @@ def addEvernote
     end
   end
 end
+

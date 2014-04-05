@@ -2,7 +2,7 @@ require 'active_record'
 
 ActiveRecord::Base.establish_connection(
   "adapter" => "sqlite3",
-  "database" => "./model/favorite.db"
+  "database" => "../model/favorite.db"
 )
 
 class Favorite < ActiveRecord::Base
