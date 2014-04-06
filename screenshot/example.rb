@@ -94,7 +94,7 @@ class ScreenshotToEvernote
 
   def getScreenshot(url)
     puts "Get screenshot form #{url}"
-    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=4 "#{url}"`
+    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=4 "#{url}" --js='scrollTo(0, 10000)'`
   end
 
   def getPageTitle(url)
