@@ -31,12 +31,13 @@ module SsEvernote
 
   def getNotebookByTagname(tag)
     notebookList = @noteStore.listNotebooks
+    notebookHash = {}
     notebookList.each do |notebook|
       if notebook.name.include?(tag)
         notebookHash.push(:notebook => notebook.name, :tag => tag)
       end
     end
-    notebookList.each do |notebook|
+    notebookHash.each do |notebook|
       noteList.each do |note|
         if notebook.include?(note)
           notebook = notebook
