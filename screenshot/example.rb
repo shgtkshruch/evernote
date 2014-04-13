@@ -22,7 +22,7 @@ class ScreenshotToEvernote
     hasNote?(notes)
     notes.each do |note|
       url = getURL(note.guid)
-      title = getPageTitle(url).gsub(/\n\s+/, '')
+      title = getPageTitle(url).gsub(/\n\s+/, '').gsub(/^\s/, '')
       begin
         getScreenshot(url)
       rescue => e
@@ -94,18 +94,16 @@ class ScreenshotToEvernote
 
   def getScreenshot(url)
     puts "Get screenshot form #{url}"
-    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=4 "#{url}" --js='scrollTo(0, 10000)'`
+    `webkit2png --width=960 --fullsize --dir=$HOME/evernote/screenshot --delay=5 "#{url}" --js='scrollTo(0, 10000);scrollTo(0, 0);'`
   end
 
   def getPageTitle(url)
     page = Mechanize.new
-    pageTitle = page.get("#{url}").title
-    pageTitle
+    page.get("#{url}").title
   end
 
   def getFilename(url)
-    filename = "#{url.gsub(/https?:\/\//, "").gsub(/[.\/\-#]/, "")}-full.png"
-    filename
+    "#{url.gsub(/http:\/\//, "").gsub(/[.\/\-#]/, "")}-full.png"
   end
 
   def endOperation(filename, title)
