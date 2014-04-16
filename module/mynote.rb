@@ -7,7 +7,7 @@ class Mynote
     @noteGuid = ''
     @notebookGuid = ''
     @sourceURL = ''
-    @filename = ''
+    @filename = []
     @tagNames = []
   end
 end

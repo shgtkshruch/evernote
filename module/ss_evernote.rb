@@ -143,6 +143,66 @@ module SsEvernote
     note
   end
 
+  def setupNote
+    @note = Evernote::EDAM::Type::Note.new
+    @attributes = Evernote::EDAM::Type::NoteAttributes.new
+    @note.attributes = @attributes
+  end
+
+  def setSourceURL(url)
+    @note.attributes.sourceURL = url
+  end
+
+  def setAuthor(author)
+    @note.attributes.author = author
+  end
+
+  def setTitle(title)
+    @note.title = title
+  end
+
+  def setContent(content)
+    n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    n_body += "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">"
+    n_body += "<en-note>#{content}</en-note>"
+    @note.content = n_body
+  end
+
+  def setNoteGuid(guid)
+    @note.guid = guid
+  end
+
+  def setTags(tags)
+    @note.tagNames = tags
+  end
+
+  def setNotebookGuid(notebookGuid)
+    @note.notebookGuid = notebookGuid
+  end
+
+  def setResource(resource)
+    @note.resources = []
+    @note.resources += resource
+  end
+
+  def getResource(filename)
+    mimeType = MIME::Types.type_for(filename)
+    hashFunc = Digest::MD5.new
+    file = open(filename){|io| io.read}
+    hexhash = hashFunc.hexdigest(file)
+
+    data = Evernote::EDAM::Type::Data.new
+    data.size = file.size
+    data.bodyHash = hexhash
+    data.body = file
+
+    resource = Evernote::EDAM::Type::Resource.new
+    resource.mime = "#{mimeType[0]}"
+    resource.data = data
+    resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new
+    resource.attributes.fileName = filename
+  end
+
   def ssUpdateNote(note)
     @noteStore.updateNote(note)
   rescue Evernote::EDAM::Error::EDAMUserException => edus
