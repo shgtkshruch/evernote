@@ -20,7 +20,14 @@ class Slideshare
   def getSlideshare(dirname)
     i = 1
     @page.search('.slide_image').each do |image|
-      index = i < 10 ? "0#{i}" : i
+      case i
+      when 0...10
+        index = "00#{i}"
+      when 10...100
+        index = "0#{i}"
+      else
+        index = i
+      end
       imageURL = image['data-full'].split(/\?.+/)[0]
       `wget #{imageURL} -O "#{dirname}/#{index}.jpg"`
       i += 1
