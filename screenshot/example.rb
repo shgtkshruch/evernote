@@ -103,7 +103,7 @@ class ScreenshotToEvernote
   end
 
   def getFilename(url)
-    "#{url.gsub(/http:\/\//, "").gsub(/[.\/\-#]/, "")}-full.png"
+    "#{url.gsub(/https?:\/\//, "").gsub(/[.\/\-#]/, "")}-full.png"
   end
 
   def endOperation(filename, title)
