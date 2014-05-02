@@ -21,9 +21,9 @@ class ScreenshotToEvernote
     notes = getNotes(inputNotebook, SEARCHWORD)
     hasNote?(notes)
     notes.each do |note|
-      url = getURL(note.guid)
-      title = getPageTitle(url).gsub(/\n\s+/, '').gsub(/^\s/, '')
       begin
+        url = getURL(note.guid)
+        title = getPageTitle(url).gsub(/\n\s+/, '').gsub(/^\s/, '')
         getScreenshot(url)
       rescue => e
         puts "Error get screenshot: #{e}"
