@@ -39,6 +39,7 @@ def createNote
   rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
     puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
   end
+  File.remove(@filename)
 end
 
 def perse
@@ -102,5 +103,4 @@ class Resource
 end
 
 perse
-getContent
 createNote
