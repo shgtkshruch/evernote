@@ -15,15 +15,11 @@ class ScreenshotToEvernote
   include SsEvernote
 
   def initialize
-    @noteStore = setupNoteStore
-    inputNotebook = getNotebook(INPUTNOTEBOOK)
-    outputNotebook = getNotebook(OUTPUTNOTEBOOK)
-    notes = getNotes(inputNotebook, SEARCHWORD)
-    hasNote?(notes)
-    notes.each do |note|
+    init
+    hasNote?(@notes)
+    @notes.each do |note|
       begin
         url = getURL(note.guid)
-        title = getPageTitle(url).gsub(/\n\s+/, '').gsub(/^\s/, '')
         getScreenshot(url)
       rescue => e
         puts "Error get screenshot: #{e}"
@@ -33,10 +29,10 @@ class ScreenshotToEvernote
       filename = getFilename(url)
 
       mynote = Mynote.new
-      mynote.title = title
+      mynote.title = getPageTitle(url).gsub(/\n\s+/, '').gsub(/^\s/, '')
       mynote.content = url
       mynote.noteGuid = note.guid
-      mynote.notebookGuid = outputNotebook.guid
+      mynote.notebookGuid = @outputNotebook.guid
       mynote.sourceURL = url
       mynote.filename = filename
 
@@ -53,6 +49,13 @@ class ScreenshotToEvernote
       endOperation(filename, title)
     end
     puts "Update all note successfully!"
+  end
+
+  def init
+    @noteStore = setupNoteStore
+    inputNotebook = getNotebook(INPUTNOTEBOOK)
+    @outputNotebook = getNotebook(OUTPUTNOTEBOOK)
+    @notes = getNotes(inputNotebook, SEARCHWORD)
   end
 
   def hasNote?(notes)
