@@ -182,25 +182,29 @@ module SsEvernote
 
   def setResource(resource)
     @note.resources = []
-    @note.resources += resource
+    @note.resources.push(resource)
   end
 
   def getResource(filename)
-    mimeType = MIME::Types.type_for(filename)
+    @mimeType = MIME::Types.type_for(filename)
     hashFunc = Digest::MD5.new
     file = open(filename){|io| io.read}
-    hexhash = hashFunc.hexdigest(file)
+    @hexhash = hashFunc.hexdigest(file)
 
     data = Evernote::EDAM::Type::Data.new
     data.size = file.size
-    data.bodyHash = hexhash
+    data.bodyHash = @hexhash
     data.body = file
 
     resource = Evernote::EDAM::Type::Resource.new
-    resource.mime = "#{mimeType[0]}"
+    resource.mime = "#{@mimeType[0]}"
     resource.data = data
     resource.attributes = Evernote::EDAM::Type::ResourceAttributes.new
     resource.attributes.fileName = filename
+  end
+
+  def getEnmedia
+    '<en-media type="' + @mimeType[0] + '" hash="' + @hexhash + '"/>'
   end
 
   def ssUpdateNote(note)
