@@ -6,7 +6,8 @@ class ShoppingNotes
 
   def initialize
     @src = '0000 inbox'
-    @author = 'shgtk.shruch@gmail.com'
+    @author = 'service-jp@paypal.com'
+    # @author = 'O\'Reilly Japan Ebook Store'
     vendors
     getShoppingNotes
     setDestNotebook
@@ -15,7 +16,7 @@ class ShoppingNotes
   def vendors
     @vendors = {
       'amazon' => '1501 Amazon', 
-      'reilly' => '1502 OReilly',
+      'オライリー・ジャパン' => '1502 OReilly',
       'bookoff' => '1503 Bookoff',
       'appple' => '1504 Apple',
       'gihyo' => '1505 Gihyo',
@@ -26,7 +27,7 @@ class ShoppingNotes
   def getShoppingNotes
     @noteStore = setupNoteStore
     @src_notebook = getNotebook(@src)
-    @notes_meta = getNotes(@src_notebook, '注文')
+    @notes_meta = getNotes(@src_notebook, '支払')
     hasNote? ? foundNote : notFound
   end
 
@@ -47,7 +48,7 @@ class ShoppingNotes
     @notes_meta.each do |note_meta|
       @note = ssGetNote(note_meta.guid)
       @vendors.each do |vendor, notebook| 
-        if @note.content.include?(vendor.to_s)
+        if @note.title.include?(vendor.to_s)
           @dest_notebook = getNotebook(notebook.to_s)
         else
           @dest_notebook = getNotebook('1500 Shopping')
