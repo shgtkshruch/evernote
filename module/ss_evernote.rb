@@ -3,7 +3,9 @@ require 'mime/types'
 require 'base64'
 require_relative '../config/token'
 
-module SsEvernote
+class SsEvernote
+  @noteStore = ''
+
   def setupNoteStore
     case EVENV
     when 'test'
@@ -20,7 +22,6 @@ module SsEvernote
       )
     end
     @noteStore = client.note_store
-    @noteStore
   end
 
   def getNotebook(notebookName)
