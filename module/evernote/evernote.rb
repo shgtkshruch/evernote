@@ -158,7 +158,7 @@ class SsEvernote
 
   def ssUpdateNote(note)
     puts "Update note..."
-
+  begin
     @noteStore.updateNote(note)
   rescue Evernote::EDAM::Error::EDAMUserException => edus
     puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
@@ -166,7 +166,21 @@ class SsEvernote
     puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
   rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
     puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
-
+  end
     puts "Update #{note.title} note successfully!"
+  end
+
+  def ssCreateNote(note)
+    puts "Create new note..."
+  begin
+    @noteStore.createNote(note)
+  rescue Evernote::EDAM::Error::EDAMUserException => edus
+    puts "EDAMUserException: #{edus.errorCode} #{edus.parameter}"
+  rescue Evernote::EDAM::Error::EDAMSystemException => edsy
+    puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
+  rescue Evernote::EDAM::Error::EDAMNotFoundException => edno
+    puts "EDAMNotFoundException: #{edno.identifier} #{edno.key}"
+  end
+    puts "Create #{note.title} note successfully!"
   end
 end

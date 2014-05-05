@@ -1,11 +1,10 @@
-require_relative './ss_mechanize'
+require_relative './slide'
 
-class Slideshare
-  include SsMechanize
+class Slideshare < Slide
   attr_accessor :title, :filename
 
   def initialize(url)
-    mechanize(url)
+    super(url)
     @title = @page.title
     @filename = "#{@title}.pdf"
   end
