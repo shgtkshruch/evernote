@@ -1,16 +1,15 @@
 require 'mechanize'
 
 class Page
-  attr_accessor :url, :title
+  attr_accessor :url
 
   def initialize(url)
     @url = url
-    getPageTitle
   end
 
-  def getPageTitle
+  def getTitle
     agent = Mechanize.new
-    @title = agent.get(@url).title
+    agent.get(@url).title
   end
 
   def takeScreenshot

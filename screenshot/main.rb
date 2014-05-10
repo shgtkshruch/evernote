@@ -21,7 +21,7 @@ notesMetadata.notes.each do |meta|
 
   newNote = note.create(
     guid: note.guid,
-    title: page.title,
+    title: note.title.gsub!(/\s\[feedly\]/, ''),
     content: url,
     notebookGuid: outputNotebook.guid,
     tagNames: [],
@@ -34,3 +34,4 @@ notesMetadata.notes.each do |meta|
 end
 
 puts "Update all note successfully!"
+
