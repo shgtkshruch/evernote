@@ -14,6 +14,6 @@ class Page
 
   def takeScreenshot
     puts "Take a screenshot form #{@url}"
-    `webkit2png --width=1920 --fullsize --dir=$HOME/evernote/screenshot --delay=5 "#{@url}" --js='scrollTo(0, 10000);scrollTo(0, 0);'`
+    `webkit2png --width=1920 --fullsize --dir=$HOME/evernote/screenshot --delay=5 "#{@url}" --js='scrollTo(0, 10000);'`
   end
 end
