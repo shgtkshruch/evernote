@@ -9,23 +9,27 @@ class Caption
     captionTitle = @captionBlock.search('h2').text
     @captionBody = @captionBlock.search('p')
     getCaptionImage
-    return captionTitle, @captionBody.to_s, @filename
+    return captionTitle, @captionBody.to_s, @filenames
   end
 
   def getCaptionImage
-    img = @captionBody.search('img')
-    unless img.empty?
-      host = 'lms.gacco.org'
-      img = img.attr('src')
-      url = host + img
-      `wget #{url}`
-      convertEnmedia(img)
+    @filenames = []
+    imgs = @captionBody.search('img')
+    imgs.each do |img|
+      unless img.to_s.empty?
+        host = 'lms.gacco.org'
+        img = img.attr('src')
+        url = host + img
+        `wget #{url}`
+        convertEnmedia(img)
+      end
     end
   end
 
   def convertEnmedia(img)
-    @filename = img.to_s.gsub(/.+asset\//, '')
-    resource = Resource.new(@filename)
-    @captionBody = @captionBody.to_s.gsub(/<img.+?>/, resource.media)
+    filename = img.to_s.gsub(/.+asset\//, '')
+    @filenames.push(filename)
+    resource = Resource.new(filename)
+    @captionBody = @captionBody.to_s.gsub(/<img.+#{filename}">/, resource.media)
   end
 end

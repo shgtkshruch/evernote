@@ -4,7 +4,7 @@ require_relative './subtitle'
 require_relative './caption'
 
 class Page
-  attr_accessor :title, :captionTitle, :captionBody, :filename, :subtitle
+  attr_accessor :title, :captionTitle, :captionBody, :filenames, :subtitle
 
   def initialize
     @html = Nokogiri::HTML(`chrome-cli source`)
@@ -20,6 +20,6 @@ class Page
 
   def getCaption
     captionBlock = Caption.new(@captionBlock)
-    @captionTitle, @captionBody, @filename = captionBlock.getCaption
+    @captionTitle, @captionBody, @filenames = captionBlock.getCaption
   end
 end

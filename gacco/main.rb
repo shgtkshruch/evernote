@@ -14,9 +14,9 @@ newNote = note.create(
   title: note.title,
   content: note.content,
   notebookGuid: evernote.getNotebook('1304 gacco').guid,
-  filename: page.filename
+  filenames: page.filenames
 )
 
 evernote.ssCreateNote(newNote)
 
-File.delete(page.filename)
+page.filenames.each {|f| File.delete(f)}
