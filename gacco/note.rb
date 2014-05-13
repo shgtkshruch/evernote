@@ -26,6 +26,7 @@ class Note < Evernote::EDAM::Type::Note
     notebookGuid: '',
     tagNames: [],
     filenames: [],
+    sourceURL: '',
     author: 'shgtkshruch'
   )
     # Create note instance
@@ -38,6 +39,7 @@ class Note < Evernote::EDAM::Type::Note
     # Set Note attributes
     attributes = Evernote::EDAM::Type::NoteAttributes.new
     attributes.author = author
+    attributes.sourceURL = sourceURL
     note.attributes = attributes
 
     n_body = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"

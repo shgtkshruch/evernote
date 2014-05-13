@@ -14,7 +14,8 @@ newNote = note.create(
   title: note.title,
   content: note.content,
   notebookGuid: evernote.getNotebook('1304 gacco').guid,
-  filenames: page.filenames
+  filenames: page.filenames,
+  sourceURL: page.url
 )
 
 evernote.ssCreateNote(newNote)

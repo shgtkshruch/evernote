@@ -4,12 +4,18 @@ require_relative './subtitle'
 require_relative './caption'
 
 class Page
-  attr_accessor :title, :captionTitle, :captionBody, :filenames, :subtitle
+  attr_accessor :title, :url, :captionTitle, :captionBody, :filenames, :subtitle
 
   def initialize
     @html = Nokogiri::HTML(`chrome-cli source`)
     @captionBlock = @html.search('#seq_content .vert-1 .xblock')
     @title = @html.search('#seq_content h2').first.text
+    @url = getURL
+  end
+
+  def getURL
+    info = `chrome-cli info`
+    info[/https?.+/]
   end
 
   def getSubtitle
