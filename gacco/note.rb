@@ -11,7 +11,7 @@ class Note < Evernote::EDAM::Type::Note
   end
 
   def styling
-    container = '<div style="width:81%;margin-left:auto;margin-right:auto;font-family:Helvetica;font-size:14px;">'
+    container = '<div style="min-width:700px;max-width:800px;width:81%;margin-left:auto;margin-right:auto;font-family:Helvetica;font-size:14px;">'
 
     @content = @content.insert(0, "<h1>#{@lessonTitle}</h1>")
     @content = @content.insert(0, container)
