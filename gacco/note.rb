@@ -3,6 +3,7 @@ require 'evernote_oauth'
 class Note < Evernote::EDAM::Type::Note
   def initialize(page)
     @title = page.title
+    @lessonTitle = page.getLessonTitle
     @content = page.subtitle
     @capTitle = page.captionTitle
     @capBody = page.captionBody
@@ -12,7 +13,7 @@ class Note < Evernote::EDAM::Type::Note
   def styling
     container = '<div style="width:81%;margin-left:auto;margin-right:auto;font-family:Helvetica;font-size:14px;">'
 
-    @content = @content.insert(0, "<h1>#{@title}</h1>")
+    @content = @content.insert(0, "<h1>#{@lessonTitle}</h1>")
     @content = @content.insert(0, container)
     @content = @content.insert(-1, "<br/><h2>#{@capTitle}</h2>")
     @content = @content.insert(-1, @capBody)
