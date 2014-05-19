@@ -1,10 +1,11 @@
 require 'nokogiri'
+require 'mechanize'
 
 require_relative './subtitle'
 require_relative './caption'
 
 class Page
-  attr_accessor :title, :url, :captionTitle, :captionBody, :filenames, :subtitle
+  attr_accessor :title, :url, :captionTitle, :captionBody, :filenames, :subtitle, :pdf
 
   def initialize
     @html = Nokogiri::HTML(`chrome-cli source`)
@@ -39,5 +40,17 @@ class Page
   def getCaption
     captionBlock = Caption.new(@captionBlock)
     @captionTitle, @captionBody, @filenames = captionBlock.getCaption
+  end
+
+  def pdfURL
+    host = 'https://lms.gacco.org' 
+    query = '/c4x/gacco/'
+    courseNo = @url.lines('/')[5].delete('/')
+    lessonNo = getLessonTitle[0..2]
+    host + query + courseNo + '/asset/' + lessonNo + '.pdf'
+  end
+
+  def getPDF
+    @pdf = Mechanize.new.get(pdfURL).save
   end
 end

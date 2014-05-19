@@ -68,6 +68,9 @@ class Note < Evernote::EDAM::Type::Note
         resource.attributes.fileName = filename
         resources.push(resource)
 
+        if mimeType.first.extensions.first == 'pdf'
+          n_body += '<en-media type="' + mimeType[0] + '" hash="' + hexhash + '" /><br />'
+        end
       end
       note.resources = resources
     end
