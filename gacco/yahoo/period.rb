@@ -37,7 +37,14 @@ class Period
       end
       i = i + 1
     end
-    r.slice!(-3, 3)
+
+    case r[-4,4]
+    when '</p>'
+      r.slice!(-3, 3)
+    else
+      r << '</p>'
+    end
+
     result = ''
     r.each_line('</p>') {|line| result << line}
     result

@@ -20,6 +20,7 @@ newNote = note.create(
   filenames: page.filenames,
   sourceURL: page.url
 )
+
 evernote.ssCreateNote(newNote)
 page.filenames.each {|f| File.delete(f)}
 
