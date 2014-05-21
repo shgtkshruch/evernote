@@ -46,7 +46,7 @@ class Page
     host = 'https://lms.gacco.org' 
     query = '/c4x/gacco/'
     courseNo = @url.lines('/')[5].delete('/')
-    lessonNo = getLessonTitle[0..2]
+    lessonNo = getLessonTitle.split('.').first
     host + query + courseNo + '/asset/' + lessonNo + '.pdf'
   end
 
