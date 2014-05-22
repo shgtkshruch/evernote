@@ -8,7 +8,7 @@ require_relative './period'
 class Ma
   def initialize(text)
     @text = text
-    @break = 'BR'
+    @break = '@@@'
   end
 
   def analyse
@@ -33,7 +33,7 @@ class Ma
       end
       i = i + 1
     end
-    s
+    s.gsub!(/\&quot\;/, '"')
   end
 
   def ma(s)
