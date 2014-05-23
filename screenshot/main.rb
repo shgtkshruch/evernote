@@ -12,6 +12,7 @@ notesMetadata.hasNote?
 
 notesMetadata.notes.each do |meta|
   note = evernote.ssGetNote(meta.guid)
+  note.title.gsub!($&, '') if note.title =~ /\s\[feedly\]/
   url = note.extractURL
 
   page = Page.new(url)
@@ -21,7 +22,7 @@ notesMetadata.notes.each do |meta|
 
   newNote = note.create(
     guid: note.guid,
-    title: note.title.gsub!(/\s\[feedly\]/, ''),
+    title: note.title,
     content: url,
     notebookGuid: outputNotebook.guid,
     tagNames: [],
