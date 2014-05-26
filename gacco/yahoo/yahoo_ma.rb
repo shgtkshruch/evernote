@@ -12,9 +12,8 @@ class Ma
   end
 
   def analyse
-    s = devideSentence
     addHeader
-    ma(s)
+    ma(devideSentence)
     addFooter
     result = Period.go
     File.delete('ma.txt')
@@ -34,6 +33,7 @@ class Ma
       i = i + 1
     end
     s.gsub!(/\&quot\;/, '"')
+    s
   end
 
   def ma(s)

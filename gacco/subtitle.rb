@@ -12,8 +12,7 @@ class Subtitle
     page = agent.get(@url)
     page.search('text').each{|t| content << t.text + ' '}
     ma = Ma.new(content)
-    result = ma.analyse
-    return result
+    ma.analyse
   end
 end
 
