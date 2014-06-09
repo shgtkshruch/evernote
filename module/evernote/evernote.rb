@@ -21,7 +21,11 @@ class SsEvernote
         service_host: 'www.evernote.com'
       )
     end
-    @noteStore = client.note_store
+    begin
+      @noteStore = client.note_store
+    rescue Evernote::EDAM::Error::EDAMSystemException => edsy
+      puts "EDAMSystemException: #{edsy.errorCode} #{edsy.message}"
+    end
   end
 
   def getNotebook(notebookName)
