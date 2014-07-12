@@ -2,7 +2,6 @@
 source "https://rubygems.org"
 
 gem "evernote_oauth"
-gem "mechanize"
+# gem "mechanize"
 gem "activerecord"
-gem "sqlite3"
-gem "pocket-ruby"
+# gem "sqlite3"
