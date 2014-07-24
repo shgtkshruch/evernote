@@ -1,7 +1,14 @@
 require 'nokogiri'
+require 'open-uri'
 
 class Schoo
   attr_accessor :title, :pdf_file, :url
+  def initialize(class_num, slide_num)
+    @class_num = class_num
+    @slide_num = slide_num
+    @class_url = 'http://schoo.jp/class/' + @class_num
+    @dirname = 'images'
+  end
 
   def download
     get_info
@@ -11,18 +18,11 @@ class Schoo
   end
 
   def get_info
-    doc = Nokogiri::HTML(`chrome-cli source`)
-    page = `chrome-cli info`
+    doc = Nokogiri::HTML(open(@class_url))
 
-    @title = doc.search('#globe > div.content.clearfix > div.wrap.clearfix > div.mainCol > div.shadowbox > div.eyeCatch.clearfix > div > div.mainSide > header > div.title.ovh > h1').text()
-    @url = page.split(/\n/)[2].gsub('Url: ', '')
-
-    class_num = page.split(/\n/)[2].gsub('Url: http://schoo.jp/class/', '')
-    @slide_url = "https://s3-ap-northeast-1.amazonaws.com/i.schoo/images/class/slide/#{class_num}/"
-    @slide_num = doc.search('#slideshow > div.slide_control > div.jump > span').text()[/\d.+/].to_i
-
+    @title = doc.title()
+    @slide_url = "https://s3-ap-northeast-1.amazonaws.com/i.schoo/images/class/slide/#{@class_num}/"
     @pdf_file = @title + '.pdf'
-    @dirname = 'images'
   end
 
   def mkdir
