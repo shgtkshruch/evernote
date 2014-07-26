@@ -2,12 +2,11 @@ require_relative './config'
 require_relative '../module/evernote_helper'
 require_relative './schoo'
 
-puts 'Class Number Slide Number'
+puts 'Class Number'
 args = gets.chomp
 class_num = args[/^\d+/]
-slide_num = args[/\d+$/].to_i
 
-slide = Schoo.new(class_num, slide_num)
+slide = Schoo.new(class_num)
 slide.download
 
 # Evernote client
