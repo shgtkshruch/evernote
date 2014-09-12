@@ -22,7 +22,7 @@ class Schoo
   def get_info
     doc = Nokogiri::HTML(open(@class_url))
 
-    @title = doc.search('#globe > div.content.clearfix > div.wrap.clearfix > div.mainCol > div.shadowbox > div.eyeCatch.clearfix > div > div.mainSide > header > div.title.ovh > h1').text
+    @title = doc.search('#globe > div.class_detail > div > div.class_detail_header > div.title').text
     modified
     @slide_url = "https://s3-ap-northeast-1.amazonaws.com/i.schoo/images/class/slide/#{@class_num}/"
     @pdf_file = @title + '.pdf'
